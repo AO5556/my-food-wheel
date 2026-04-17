@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上海大转盘 - 今天吃什么？</title>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f7f7f7;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+
+        canvas {
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
+        }
+
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #e74c3c;
+            z-index: 10;
+        }
+
+        #spin-button {
+            margin-top: 30px;
+            padding: 12px 40px;
+            font-size: 18px;
+            background-color: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #spin-button:hover {
+            background-color: #ff6b81;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2f3542;
+            height: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>上海美食大转盘</h1>
+    
+    <div class="wheel-container">
+        <div class="pointer"></div>
+        <canvas id="wheelCanvas" width="400" height="400"></canvas>
+    </div>
+
+    <button id="spin-button">开始抽取</button>
+    
+    <div id="result"></div>
+
+    <script>
+        const foods = ["小笼包", "生煎馒头", "葱油拌面", "排骨年糕", "麻辣烫", "黄焖鸡米饭", "炸鸡汉堡", "轻食沙拉", "螺蛳粉", "烧烤", "奶茶炸串", "日料寿司", "新疆炒米粉", "本帮红烧肉"];
+        const colors = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#3498db", "#1abc9c", "#2ecc71", "#d35400", "#c0392b", "#8e44ad", "#2980b9", "#16a085", "#27ae60", "#f39c12"];
+        
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const btn = document.getElementById('spin-button');
+        const resultDisplay = document.getElementById('result');
+        
+        const numSegments = foods.length;
+        const segmentAngle = 2 * Math.PI / numSegments;
+        let currentRotation = 0;
+
+        // 绘制转盘
+        function drawWheel() {
+            foods.forEach((food, i) => {
+                const angle = i * segmentAngle;
+                ctx.beginPath();
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.moveTo(200, 200);
+                ctx.arc(200, 200, 200, angle, angle + segmentAngle);
+                ctx.lineTo(200, 200);
+                ctx.fill();
+
+                // 绘制文字
+                ctx.save();
+                ctx.translate(200, 200);
+                ctx.rotate(angle + segmentAngle / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "white";
+                ctx.font = "bold 16px Arial";
+                ctx.fillText(food, 180, 5);
+                ctx.restore();
+            });
+        }
+
+        drawWheel();
+
+        // 旋转功能
+        btn.addEventListener('click', () => {
+            resultDisplay.innerText = "正在挑选...";
+            const randomSpin = Math.floor(Math.random() * 3600) + 1440; // 旋转 4-14 圈
+            currentRotation += randomSpin;
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+            // 计算结果
+            setTimeout(() => {
+                const finalAngle = (360 - (currentRotation % 360)) % 360;
+                const index = Math.floor((finalAngle / 360) * numSegments);
+                resultDisplay.innerText = `今天吃：${foods[index]}`;
+            }, 4000);
+        });
+    </script>
+
+</body>
+</html>
